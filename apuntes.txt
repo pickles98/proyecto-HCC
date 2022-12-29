@@ -1,0 +1,7 @@
+-> ipywidgets
+Tiene herramientas interactivas para agregar a las jupyter-notebooks. En el codigo importamos interact, interact_manual y widgets.
+
+-> ipyvolume
+Ayuda a visualizar volumenes en 3D y glyfos(creo).
+
+
