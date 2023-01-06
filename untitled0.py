@@ -7,20 +7,28 @@ Created on Wed Dec 28 13:16:22 2022
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import ipyvolume as ipv
 
-space_size = 2
-box = np.zeros([space_size for x in range(3)])
+def make_box(box_size, space_size = None):
+    if not space_size:
+        space_size = box_size + 4
+    box = np.zeros([space_size for x in range(3)])
+    start = (space_size - box_size) // 2
+    end = space_size - start
+    box[start:end, start:end, start:end] = 1
+    return(box)
+
+box = make_box(box_size=3)
+
 print(box)
-print()
-a = np.zeros((10,10))
-print(a)
-print()
-a[3:-3, 3:-3] = 1.
-a[4:-4, 4:-4] = 0
-print(a)
 
-lenguajes = ['Java', 'Python', 'JavaScript']
-versiones = [14, 3, 6]
-resultado = zip(lenguajes, versiones)
-print(list(resultado))
+print()
+
+box1 = make_box(box_size=1)
+
+print(box1)
+
+print()
+
+box2 = make_box(box_size=2)
+
+print(box2)
