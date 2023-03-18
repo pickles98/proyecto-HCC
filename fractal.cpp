@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <random>
 
 int main() {
 	std::ifstream archivo("asu1.tsv");
@@ -64,9 +65,54 @@ int main() {
 		z.push_back(z1);
 	}
 
-	for (const auto& valor : x) {
-		std:: cout << valor << std::endl;
+	//for (const auto& valor : x) {
+	//	std:: cout << valor << std::endl;
+	//}
+	
+	// Calculamos la mayor distancia a la que esta una galaxia
+	double max = 0;
+	for (const auto& i : dist) {
+		if (i > max) {
+			max = i;
+		}
 	}
+
+	std::cout << "Distancia máxima: " << max << std::endl;
+	
+
+	std::vector<int> galaxias_centro;
+	// Ahora definimos la condición que debe tener una galaxia para poder ser centro
+	int M = 0;
+	double limite = 360;
+	int semilla = 27;
+	int cant_galaxias = rs.size();
+	while (M < 10) {
+		// Genero un número aleatorio utilizando la libreria random
+		// Defino mi semilla
+		semilla += 27;
+		//Creo un objeto mt19937 como generador de números utilizando Mersenne twister
+		std::mt19937 generador(semilla);
+		//Creo una distribucion uniforme para generar numero enteros entre todos los indices de las galaxias
+		std::uniform_int_distribution<int> distribucion(0, cant_galaxias); 
+		//Genero un número aleatorio
+		int num_alt = distribucion(generador);
+		if (dist[num_alt] < limite) {
+			galaxias_centro.push_back(num_alt);
+			M += 1;
+		}
+	}
+	
+	//std::mt19937 generador(semilla);
+	//std::uniform_int_distribution<int> distribucion(0, cant_galaxias);
+	//int num_alt = distribucion(generador);
+
+	//std::cout << "numero aleatorio: " << num_alt << std::endl;
+	
+	for (const auto& galaxia : galaxias_centro) {
+		std::cout << galaxia << " " << dist[galaxia] << std::endl;
+	}
+
+	
 
 	return 0;
 }
