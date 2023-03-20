@@ -11,7 +11,7 @@ double distancias(double, double, double, double, double, double);
 int conteo(double, std::vector<double>);
 
 int main() {
-	std::ifstream archivo("asu1.tsv");
+	std::ifstream archivo("datos.tsv");
 	std::vector<double> RA;
 	std::vector<double> DE;
 	std::vector<double> rs;
