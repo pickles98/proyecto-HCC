@@ -89,7 +89,7 @@ int main() {
 	double limite = 360;
 	int semilla = 27;
 	int cant_galaxias = rs.size();
-	while (M < 10) {
+	while (M < 100) {
 		// Genero un número aleatorio utilizando la libreria random
 		// Defino mi semilla
 		semilla += 27;
@@ -148,37 +148,53 @@ int main() {
 	//archivo_salida.close();
 	//std::cout << "Archivo de salida listo." << std::endl;
 	
-	std::vector<std::vector<int>> suma;
+	//std::vector<std::vector<int>> suma;
 	double r;
 	double rmax;
+	std::vector<std::vector<double>> cont;
 	rmax = 200.;
 	r = 2;
 	while (r < rmax) {
-		std::vector<int> radios;
+		std::vector<double> radios;
 		radios.push_back(r);
+		double sum = 0;
 		for (const auto& fila : dtogc) {
 			int cg;
 			cg = conteo(r, fila);
-			radios.push_back(cg);
+			sum += cg;
 		}
-		suma.push_back(radios);
+		sum = sum / 100.;
+		radios.push_back(sum);
+		//suma.push_back(radios);
+		cont.push_back(radios);
 		r += 2;
 	}
 	
 	std::ofstream archivo_salida("conteos.dat");
-	archivo_salida << std::right;
-	std::vector<std::string> titulos;
-	titulos = {"galaxia1", "galaxia2", "galaxia3", "galaxia4", "galaxia5", "galaxia6", "galaxia7", "galaxia8", "galaxia9", "galaxia10"};
+	//archivo_salida << std::right;
+	//std::vector<std::string> titulos;
+	//titulos = {"galaxia1", "galaxia2", "galaxia3", "galaxia4", "galaxia5", "galaxia6", "galaxia7", "galaxia8", "galaxia9", "galaxia10"};
 	
 	//archivo_salida << " " << "|" << " galaxia_1 " << "|" << " galaxia_2 " << "|" << " galaxia_3 " << "|" << " galaxia_4 " << "|" << " galaxia_5 " << "|" << " galaxia_6 " << "|" << " galaxia_7 " << "|" << " galaxia_8 " << "|" << " galaxia_9 " << "|" << " galaxia 10" << std::endl;
-	archivo_salida << "radio" << " ";
-	for (int i=0; i<10; i++) {
-		archivo_salida << titulos[i] << " ";
-	}
-	archivo_salida << std::endl;
+	//archivo_salida << "radio" << " ";
+	//for (int i=0; i<10; i++) {
+	//	archivo_salida << titulos[i] << " ";
+	//}
+	//archivo_salida << std::endl;
 	//archivo_salida << titulos[9] << std::endl;
 
-	for (const auto& fila : suma) {
+	//for (const auto& fila : suma) {
+	//	for (const auto& valor : fila) {
+	//		archivo_salida << valor << " ";
+	//	}
+	//	archivo_salida << std::endl;
+	//}
+	//archivo_salida.close();
+	//
+	
+	archivo_salida << std::right;
+	archivo_salida << "radio" << " " << "cant.prom.gal." << std::endl;
+	for (const auto& fila : cont) {
 		for (const auto& valor : fila) {
 			archivo_salida << valor << " ";
 		}
