@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -50,11 +49,11 @@ int main() {
 	std::vector<double> z;
 
 	const double c = 299792.458;	//vel. de la luz en km/s
-	const double H0 = 72;		//cte de Hubble [(km/s)/Mpc]
+	const double h = 0.6767;	//parametro de Hubble
 	
 	// distancia[Mpc] = rs * c / H0
 	for (int i = 0; i < rs.size(); i++) {
-		double valor = rs[i] * c / H0;
+		double valor = rs[i] * c / (h*100.);
 		dist0.push_back(valor);
 
 	}
@@ -104,10 +103,9 @@ int main() {
 	}
 
 	double r;			//radio variable de las esferas
-	const double rmax = 200.;	//limite para los r
+	double rmax = 350;	//limite para los r
 	std::vector<std::vector<double>> promedio;
 	std::vector<double> C2;
-
 	// En este paso calculo el promedio de la cantidad de galaxias que
 	// entraban en cada esfera de radio r. De paso calculo el valor C2(r).
 	r = 2;				//valor de inicio
