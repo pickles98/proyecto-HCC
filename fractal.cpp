@@ -9,9 +9,12 @@
 
 double distancias(double, double, double, double, double, double);
 int conteo(double, std::vector<double>);
+double distancias2(double, double, double, double, double, double);
+int conteo2(double, std::vector<double>);
 
 int main() {
 	std::ifstream archivo("datos.tsv");
+	char sep = ',';
 	std::vector<double> RA;
 	std::vector<double> DE;
 	std::vector<double> rs;
@@ -27,7 +30,7 @@ int main() {
 			double valor;
 			while (ss >> valor) {
 				fila.push_back(valor);
-				if (ss.peek() == ',') {
+				if (ss.peek() == sep) {
 					ss.ignore();
 				}
 			}
@@ -65,18 +68,6 @@ int main() {
 		z.push_back(z1);
 	}
 
-	
-	// Calculamos la mayor distancia a la que esta una galaxia
-	double max = 0;
-	for (const auto& i : dist0) {
-		if (i > max) {
-			max = i;
-		}
-	}
-
-	std::cout << "Distancia máxima: " << max << std::endl;
-	
-
 	// En este paso defino mi conjunto de galaxias centro
 	std::vector<int> galaxias_centro;
 	double limite = 150;	//mas alla de esta distancia no tomamos galaxias pues puede
@@ -86,55 +77,54 @@ int main() {
 	int M = 100;		//cantidad de galaxias centro que voy a utilizar 
 	int m = 0;
 	while (m < M) {
-		semilla += 3;		//vario el valor de la semilla para cambiar el nro generado
 	//Creo un objeto mt19937 como generador de números utilizando Mersenne twister
 		std::mt19937 generador(semilla);
 	//Creo una distribucion uniforme para generar numero enteros entre 
 	//todos los indices de las galaxias
 		std::uniform_int_distribution<int> distribucion(0, cant_galaxias); 
 		int num_alt = distribucion(generador);		//Genero un número aleatorio
+		semilla += 3;	//vario el valor de la semilla para cambiar el nro generado
 		if (dist0[num_alt] < limite) {
 			galaxias_centro.push_back(num_alt);
 			m += 1;
 		}
 	}
-	
+
+	//En este paso guardo las distancias a mis galaxias centro en una matriz 
 	std::vector<std::vector<double>> dtogc;		// vector de vectores que guardara 
 							//las distancias a las galaxias centro
-
 	for (const auto& galaxia : galaxias_centro) {
 		std::vector<double> fila;
 		for (int i = 0; i < cant_galaxias; i++) {
 			double valor;
-			valor = distancias(x[galaxia], y[galaxia], z[galaxia], x[i], y[i], z[i]);
+			valor = distancias2(x[galaxia], y[galaxia], z[galaxia], x[i], y[i], z[i]);
 			fila.push_back(valor);
 		}
 		dtogc.push_back(fila);
 	}
 
 	double r;			//radio variable de las esferas
-	const double rmax = 350.;	//limite para los r
+	const double rmax = 200.;	//limite para los r
 	std::vector<std::vector<double>> promedio;
 	std::vector<double> C2;
-	r = 2;				//valor de inicio
 
 	// En este paso calculo el promedio de la cantidad de galaxias que
 	// entraban en cada esfera de radio r. De paso calculo el valor C2(r).
+	r = 2;				//valor de inicio
 	while (r < rmax) {
 		double sum = 0;
-		double prom = 0;	//promedio(r) = cant_galaxias * C2(r)
-		double c2 = 0;		//valor de C2(r)
-		std::vector<double> fila1; //guardo las filas de promedio
-		fila1.push_back(r);
+		double prom;	//promedio(r) = cant_galaxias * C2(r)
+		double c2;		//valor de C2(r)
+		std::vector<double> filap; //guardo las filas de promedio
+		filap.push_back(r);
 		for (const auto& fila : dtogc) {
-			int cg;
-			cg = conteo(r, fila);
+			int cg = conteo2(r, fila);
 			sum += cg;
 		}
 		prom = sum / 100.;
 		c2 = prom / cant_galaxias;
-		fila1.push_back(prom);
-		promedio.push_back(fila1);
+		filap.push_back(prom);
+		promedio.push_back(filap);
 		C2.push_back(c2);
 		r += 2;
 	}
@@ -188,6 +178,14 @@ double distancias(double x0, double y0, double z0, double x, double y, double z)
 	return dist;
 }
 
+double distancias2(double x0, double y0, double z0, double x, double y, double z) {
+	double dist2;
+
+	dist2 = pow(x-x0,2) + pow(y-y0,2) + pow(z-z0,2);
+
+	return dist2;
+}
+
 int conteo(double radio, std::vector<double> distancias) {
 	int cantidad;
 	const double h = 0.6767;
@@ -198,6 +196,22 @@ int conteo(double radio, std::vector<double> distancias) {
 			cantidad += 1;
 		}
 	}
-	
+
+	return cantidad;
+}
+
+int conteo2(double radio, std::vector<double> distancias) {
+	int cantidad;
+	double r2;
+	const double h = 0.6767;
+
+	r2 = pow(radio/h,2);
+	cantidad = 0;
+	for (const auto& valor : distancias) {
+		if (valor < r2 and valor != 0) {
+			cantidad += 1;
+		}
+	}
+
 	return cantidad;
 }                                                                                                                                                                                                                                                
