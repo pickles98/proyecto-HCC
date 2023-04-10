@@ -5,42 +5,59 @@
 #include <string>
 #include <cmath>
 #include <random>
-
-double distancias(double, double, double, double, double, double);
-int conteo(double, std::vector<double>);
-double distancias2(double, double, double, double, double, double);
-int conteo2(double, std::vector<double>);
+#include "funciones.h"
+#include "func_lec_esc.h"
 
 int main() {
 	std::ifstream archivo("datos.tsv");
+//	std::string nombre_archivo = "datos.tsv";
 	char sep = ',';
-	std::vector<double> RA;
-	std::vector<double> DE;
-	std::vector<double> rs;
+	std::vector<std::vector<double>> datos;
+	//std::vector<double> RA;
+	//std::vector<double> DE;
+	//std::vector<double> rs;
 
-	std::string linea_vacia;
-	std::getline(archivo, linea_vacia);
+	//std::string linea_vacia;
+	//std::getline(archivo, linea_vacia);
 	
 	if (archivo.is_open()) {
-		std::string linea;
-		while (std::getline(archivo, linea)) {
-			std::istringstream ss(linea);
-			std::vector<double> fila;
-			double valor;
-			while (ss >> valor) {
-				fila.push_back(valor);
-				if (ss.peek() == sep) {
-					ss.ignore();
-				}
-			}
-			RA.push_back(fila[0]);
-			DE.push_back(fila[1]);
-			rs.push_back(fila[2]);
-		}
+		//std::string linea;
+		//while (std::getline(archivo, linea)) {
+		//	std::istringstream ss(linea);
+		//	std::vector<double> fila;
+		//	double valor;
+		//	while (ss >> valor) {
+		//		fila.push_back(valor);
+		//		if (ss.peek() == sep) {
+		//			ss.ignore();
+		//		}
+		//	}
+		//	RA.push_back(fila[0]);
+		//	DE.push_back(fila[1]);
+		//	rs.push_back(fila[2]);
+		//}
+		//
+		datos = lectura(archivo, sep);
 		archivo.close();
 	} else {
 		std::cerr << "No se pudo abrir el archivo." << std::endl;
 		return 1;
+	}
+
+	int N = datos.size();		//cantidad de galaxias
+	
+	std::vector<double> RA;
+	std::vector<double> DE;
+	std::vector<double> rs;
+
+	for (const auto& fila : datos) {
+		std::vector<double> aux;
+		for (const auto& valor : fila) {
+			aux.push_back(valor);
+		}
+		RA.push_back(aux[0]);
+		DE.push_back(aux[1]);
+		rs.push_back(aux[2]);
 	}
 
 	std::vector<double> dist0;	//vector que contiene las distancias a nuestra galaxia
@@ -52,13 +69,12 @@ int main() {
 	const double h = 0.6767;	//parametro de Hubble
 	
 	// distancia[Mpc] = rs * c / H0
-	for (int i = 0; i < rs.size(); i++) {
+	for (int i = 0; i < N; i++) {
 		double valor = rs[i] * c / (h*100.);
 		dist0.push_back(valor);
-
 	}
 
-	for (int i = 0; i < rs.size(); i++) {
+	for (int i = 0; i < N; i++) {
 		double x1 = dist0[i] * cos(DE[i]) * cos(RA[i]);
 		double y1 = dist0[i] * cos(DE[i]) * sin(RA[i]);
 		double z1 = dist0[i] * sin(DE[i]);
@@ -68,21 +84,24 @@ int main() {
 	}
 
 	// En este paso defino mi conjunto de galaxias centro
+	int M = 100;		//cantidad de galaxias centro que voy a utilizar 
 	std::vector<int> galaxias_centro;
 	double limite = 150;	//mas alla de esta distancia no tomamos galaxias pues puede
 				//haber problemas de borde
-	int semilla = 27;
-	int cant_galaxias = rs.size();
-	int M = 100;		//cantidad de galaxias centro que voy a utilizar 
+	int semilla;
+	std::cout << "Ingrese un valor para la semilla" << std::endl;
+	std::cin >> semilla;
 	int m = 0;
 	while (m < M) {
+		int num_alt;
 	//Creo un objeto mt19937 como generador de números utilizando Mersenne twister
-		std::mt19937 generador(semilla);
+		//std::mt19937 generador(semilla);
 	//Creo una distribucion uniforme para generar numero enteros entre 
 	//todos los indices de las galaxias
-		std::uniform_int_distribution<int> distribucion(0, cant_galaxias); 
-		int num_alt = distribucion(generador);		//Genero un número aleatorio
-		semilla += 3;	//vario el valor de la semilla para cambiar el nro generado
+		//std::uniform_int_distribution<int> distribucion(0, N); 
+		//int num_alt = distribucion(generador);		//Genero un número aleatorio
+		//semilla += 1;	//vario el valor de la semilla para cambiar el nro generado
+		num_alt = aleatorio(semilla, 0, N);
 		if (dist0[num_alt] < limite) {
 			galaxias_centro.push_back(num_alt);
 			m += 1;
@@ -94,21 +113,22 @@ int main() {
 							//las distancias a las galaxias centro
 	for (const auto& galaxia : galaxias_centro) {
 		std::vector<double> fila;
-		for (int i = 0; i < cant_galaxias; i++) {
+		for (int i = 0; i < N; i++) {
 			double valor;
-			valor = distancias2(x[galaxia], y[galaxia], z[galaxia], x[i], y[i], z[i]);
+			valor = distancia2(x[galaxia], y[galaxia], z[galaxia], x[i], y[i], z[i]);
 			fila.push_back(valor);
 		}
 		dtogc.push_back(fila);
 	}
 
-	double r;			//radio variable de las esferas
-	double rmax = 350;	//limite para los r
+	double rmax = 352;	//limite para los r
+	int radios = int(rmax/2);
+	int rprom = 192; 	//cantidad de radios para el grafico r vs N(r)
 	std::vector<std::vector<double>> promedio;
 	std::vector<double> C2;
 	// En este paso calculo el promedio de la cantidad de galaxias que
 	// entraban en cada esfera de radio r. De paso calculo el valor C2(r).
-	r = 2;				//valor de inicio
+	double r = 2;
 	while (r < rmax) {
 		double sum = 0;
 		double prom;	//promedio(r) = cant_galaxias * C2(r)
@@ -119,26 +139,50 @@ int main() {
 			int cg = conteo2(r, fila);
 			sum += cg;
 		}
-		prom = sum / 100.;
-		c2 = prom / cant_galaxias;
+		prom = sum / M;
+		c2 = prom / N;
 		filap.push_back(prom);
-		promedio.push_back(filap);
+		if (r < rprom) {
+			promedio.push_back(filap);
+		}
 		C2.push_back(c2);
 		r += 2;
 	}
-	
+
+	//std::vector<int> conteo;
+ 	//for (const auto& fila : dtogc) {
+	//	conteo = histograma2(fila, N, radios);
+		//for (int i = 0; i < radios; i++) {
+		//	suma[i] += conteo[i];
+		//}
+	//}
+	//for (const auto& valor : conteo) {
+	//	std::cout << valor << " ";
+	//}
+	//std::cout << std::endl;
+
+
+	//for (int i = 0; i < radios; i++) {
+	//	std::vector<double> filap;
+	//	double c2 = suma[i] / (N*M);
+	//	filap.push_back(i+2);
+	//	if (2*i < rprom) {
+	//		double prom = suma[i]/M;
+	//		filap.push_back(prom);
+	//		promedio.push_back(filap);
+	//	}
+	//	C2.push_back(c2);
+	//}
+
 	// En este paso calculo D2(r)
 	std::vector<std::vector<double>> D2;
-	int cant_datosr = C2.size();
-	r = 2;
-	for (int i = 0; i < cant_datosr - 1; i++) {
+	for (int i = 0; i < radios - 1; i++) {
 		std::vector<double> fila;
 		double d2 = 0;
-		fila.push_back(r);
+		fila.push_back(2*i+2);
 		d2 = (log10(C2[i+1])-log10(C2[i]))/(log10(i+1)-log10(i));
 		fila.push_back(d2);
 		D2.push_back(fila);
-		r += 2;
 	}
 
 	// Creo mis archivos donde voy a guardar los datos para hacer los graficos
@@ -167,49 +211,3 @@ int main() {
 	
 	return 0;
 }
-
-double distancias(double x0, double y0, double z0, double x, double y, double z) {
-	double dist;
-
-	dist = sqrt(pow(x-x0,2) + pow(y-y0,2) + pow(z-z0,2));
-
-	return dist;
-}
-
-double distancias2(double x0, double y0, double z0, double x, double y, double z) {
-	double dist2;
-
-	dist2 = pow(x-x0,2) + pow(y-y0,2) + pow(z-z0,2);
-
-	return dist2;
-}
-
-int conteo(double radio, std::vector<double> distancias) {
-	int cantidad;
-	const double h = 0.6767;
-	cantidad = 0;
-
-	for (const auto& valor : distancias) {
-		if (valor < radio/h and valor != 0) {
-			cantidad += 1;
-		}
-	}
-
-	return cantidad;
-}
-
-int conteo2(double radio, std::vector<double> distancias) {
-	int cantidad;
-	double r2;
-	const double h = 0.6767;
-
-	r2 = pow(radio/h,2);
-	cantidad = 0;
-	for (const auto& valor : distancias) {
-		if (valor < r2 and valor != 0) {
-			cantidad += 1;
-		}
-	}
-
-	return cantidad;
-}                                                                                                                                                                                                                                                
